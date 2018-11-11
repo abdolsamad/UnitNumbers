@@ -24,7 +24,7 @@ namespace UnitConversionNS.Tests
             var u3 = uc.ParseUnit("cm^2");
             Assert.IsTrue(u3 == cm*cm);
             var u4 = uc.ParseUnit("cm^2/cm");
-            Assert.IsTrue(u3 == cm);
+            Assert.IsTrue(u4 == cm);
         }
     }
 }

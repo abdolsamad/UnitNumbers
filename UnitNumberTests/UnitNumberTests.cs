@@ -7,10 +7,10 @@ namespace UnitConversionNS.Tests
     [TestClass()]
     public class UnitNumberTests
     {
-        private Unit C => new Unit("C", new Dimension() {Temperature = 1}, 1, 273.15);
-        private Unit F => new Unit("F", new Dimension() {Temperature = 1}, 5.0 / 9.0, 273.15 - 32.0 / 1.8);
-        private Unit cm => new Unit("cm", new Dimension() {Length = 1}, 0.01);
-        private Unit m => new Unit("m", new Dimension() {Length = 1}, 1.0);
+        private Unit C => new Unit("C", Dimensions.Temperature, 1, 273.15);
+        private Unit F => new Unit("F", Dimensions.Temperature, 5.0 / 9.0, 273.15 - 32.0 / 1.8);
+        private Unit cm => new Unit("cm", Dimensions.Length, 0.01);
+        private Unit m => new Unit("m", Dimensions.Length, 1.0);
 
         UnitNumber NumC => new UnitNumber(1.3, C);
         UnitNumber NumF => new UnitNumber(35.33, F);

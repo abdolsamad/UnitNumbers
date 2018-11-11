@@ -101,7 +101,7 @@ namespace UnitConversionNS
                                 operationPrecedence[operation1] < operationPrecedence[operation2])
                             {
                                 opStack.Pop();
-                                valStack.Push(ConvertOperation(operation2Token, valStack, opStack));
+                                valStack.Push(ConvertOperation(operation2, valStack, opStack));
                             }
                             else
                             {
@@ -127,12 +127,12 @@ namespace UnitConversionNS
             }
         }
 
-        private Token ConvertOperation(Token operationToken, Stack<Token> valStack, Stack<Token> opStack)
+        private Token ConvertOperation(char operation, Stack<Token> valStack, Stack<Token> opStack)
         {
             try
             {
                 Token argument1, argument2;
-                switch ((char) operationToken.Value)
+                switch (operation)
                 {
                     case '-':
                     case '*':
@@ -177,7 +177,7 @@ namespace UnitConversionNS
                             Value = ((Unit) argument1.Value).Pow((int) argument2.Value)
                         };
                     default:
-                        throw new ArgumentException(string.Format("Unknown operation \"{0}\".", operationToken),
+                        throw new ArgumentException(string.Format("Unknown operation \"{0}\".", operation),
                             "operation");
                 }
             }
@@ -187,7 +187,7 @@ namespace UnitConversionNS
                 // the mathematical formula
                 throw new Exception(string.Format("There is a syntax issue for the operation \"{0}\" " +
                                                   "The number of arguments does not match with what is expected.",
-                    operationToken.Value));
+                    operation));
             }
         }
 
@@ -211,7 +211,7 @@ namespace UnitConversionNS
                 switch (token.Type)
                 {
                     case TokenType.Operation:
-                        valStack.Push(ConvertOperation(token, valStack, opStack));
+                        valStack.Push(ConvertOperation((char)token.Value, valStack, opStack));
                         break;
                 }
             }
@@ -280,7 +280,7 @@ namespace UnitConversionNS
                         part += unit[i];
                         i++;
                     }
-
+                    i--;
                     int sign = 1;
                     if (lastToken != null && lastToken.Type == TokenType.Operation && (char) lastToken.Value == '-')
                     {
@@ -289,6 +289,7 @@ namespace UnitConversionNS
                     }
 
                     lastToken = new Token() {Value = sign * Int32.Parse(part), Type = TokenType.Number};
+                    part=String.Empty;
                 }
                 else
                 {

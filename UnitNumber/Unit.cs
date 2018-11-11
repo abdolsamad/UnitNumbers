@@ -11,6 +11,7 @@ namespace UnitConversionNS
         private bool _isBasic;
         public bool IsBasic => _isBasic;
         public Dimension Dimension => _dimension;
+
         public Unit(string identifier, Dimension dimension, double multiplier, double sum = 0.0)
         {
             _identifier = identifier;
@@ -64,36 +65,39 @@ namespace UnitConversionNS
             {
                 _identifier = _identifier + "^" + p,
                 _isBasic = false,
-                _multiplier = Math.Pow(_multiplier,p),
-                _sum = p==1?_sum:0,
+                _multiplier = Math.Pow(_multiplier, p),
+                _sum = p == 1 ? _sum : 0,
                 _dimension = _dimension.Pow(p)
             };
         }
 
         public double ToSI(double unitValue)
         {
-            return _multiplier* unitValue + _sum;
+            return _multiplier * unitValue + _sum;
         }
 
         public double FromSI(double siValue)
         {
             return (siValue - _sum) / _multiplier;
         }
+
         public Unit Clone()
         {
-            return new Unit(_identifier,_dimension.Clone(),_multiplier,_sum){_isBasic = _isBasic};
+            return new Unit(_identifier, _dimension.Clone(), _multiplier, _sum) {_isBasic = _isBasic};
         }
 
         public override string ToString()
         {
             return _identifier;
         }
+
         public static bool operator ==(Unit u1, Unit u2)
         {
-            if (u1 is null ) return u2 is null;
-            if (u2 is null ) return u1 is null;
+            if (u1 is null) return u2 is null;
+            if (u2 is null) return u1 is null;
 
-            return (u1.IsBasic == u2.IsBasic || Math.Abs(u1._sum) < 1e-8 || Math.Abs(u2._sum) < 1e-8) && u1.Matchable(u2) && Math.Abs(u1._multiplier - u2._multiplier) < 1.0e-8 &&
+            return (u1.IsBasic == u2.IsBasic || (Math.Abs(u1._sum) < 1e-8 && Math.Abs(u2._sum) < 1e-8)) &&
+                   u1.Matchable(u2) && Math.Abs(u1._multiplier - u2._multiplier) < 1.0e-8 &&
                    Math.Abs(u1._sum - u2._sum) < 1.0e-8;
         }
 
