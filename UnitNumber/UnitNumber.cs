@@ -27,11 +27,11 @@ namespace UnitConversionNS
 
         public int CompareTo(object obj)
         {
-            if (obj.GetType() == typeof(double) || obj.GetType() == typeof(int) || obj.GetType() == typeof(decimal))
+            if (obj is double || obj is int || obj is decimal)
             {
                 double d = Convert.ToDouble(obj);
                 if (this > d) return +1;
-                if (Number == d) return 0;
+                if (Math.Abs(Number - d) < Math.Max(Number , d)/1e8) return 0;
                 if (this < d) return -1;
             }else if (obj.GetType() == typeof(UnitNumber))
             {

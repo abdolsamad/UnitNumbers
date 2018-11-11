@@ -17,7 +17,7 @@ namespace UnitConversionNS
             _multiplier = multiplier;
             _sum = sum;
             _dimension = dimension;
-            _isBasic = true;
+            _isBasic = dimension.IsDimensionless || dimension.IsSingle;
         }
 
         private Unit()
@@ -90,7 +90,10 @@ namespace UnitConversionNS
         }
         public static bool operator ==(Unit u1, Unit u2)
         {
-            return u1.IsBasic == u2.IsBasic && u1.Matchable(u2) && Math.Abs(u1._multiplier - u2._multiplier) < 1.0e-8 &&
+            if (u1 is null ) return u2 is null;
+            if (u2 is null ) return u1 is null;
+
+            return (u1.IsBasic == u2.IsBasic || Math.Abs(u1._sum) < 1e-8 || Math.Abs(u2._sum) < 1e-8) && u1.Matchable(u2) && Math.Abs(u1._multiplier - u2._multiplier) < 1.0e-8 &&
                    Math.Abs(u1._sum - u2._sum) < 1.0e-8;
         }
 

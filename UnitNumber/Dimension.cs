@@ -37,6 +37,14 @@ namespace UnitConversionNS
             }
         }
 
+        public bool IsDimensionless => Mass == 0 &&
+                                       Length == 0 &&
+                                       Time == 0 &&
+                                       Temperature == 0 &&
+                                       Current == 0 &&
+                                       Mole == 0 &&
+                                       Luminosity == 0;
+
         public static bool operator ==(Dimension unit1, Dimension unit2)
         {
             return unit1.Mass == unit2.Mass && unit1.Length == unit2.Length && unit1.Time == unit2.Time &&
