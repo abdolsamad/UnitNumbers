@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace UnitConversionNS
 {
@@ -8,9 +9,11 @@ namespace UnitConversionNS
         private Dictionary<string, Unit> _basicUnits;
         private Dictionary<string, Unit> _complexUnits;
         private Dictionary<char, int> operationPrecedence;
-
+        private Regex unitNumberRegex;
         public UnitsCore()
         {
+            unitNumberRegex = new Regex(@"^(?<number>[0-9.eE+-]+?)(?:\s*\[(?<unit>\s*.+?\s*)\]\s*)?$");
+            
             _basicUnits = new Dictionary<string, Unit>();
             _complexUnits = new Dictionary<string, Unit>();
             operationPrecedence = new Dictionary<char, int>();
@@ -30,7 +33,7 @@ namespace UnitConversionNS
 
         public void AddComplexUnit(Unit unit)
         {
-            _complexUnits.Add(unit.ToString(), unit);
+            _complexUnits.Add(unit.ToString().ToLower(), unit);
         }
 
         public bool Contain(string unit)
@@ -38,6 +41,7 @@ namespace UnitConversionNS
             return _basicUnits.ContainsKey(unit.ToLower()) || _complexUnits.ContainsKey(unit.ToLower());
         }
 
+        #region Parsing
         private enum TokenType
         {
             Unit = 0,
@@ -52,7 +56,6 @@ namespace UnitConversionNS
             public TokenType Type;
             public object Value;
         }
-
         public Unit ParseUnit(string unit)
         {
             unit = unit.ToLower().Trim();
@@ -119,6 +122,22 @@ namespace UnitConversionNS
             return (Unit) valStack.Pop().Value;
         }
 
+        public UnitNumber ParseNumber(string number)
+        {
+            var match = unitNumberRegex.Match(number);
+            if(!match.Success)
+                throw new Exception("Entered value is not a valid number.");
+            Unit unit;
+            if (match.Groups["unit"].Success)
+                unit = ParseUnit(match.Groups["unit"].Value);
+            else
+            {
+                unit = new Unit("",Dimensions.Empty,1);
+            }
+
+            var num = double.Parse(match.Groups["number"].Value);
+            return new UnitNumber(num,unit);
+        }
         private void VerifyResultStack(Stack<Token> resultStack)
         {
             if (resultStack.Count > 1)
@@ -313,5 +332,6 @@ namespace UnitConversionNS
 
             return false;
         }
+        #endregion
     }
 }

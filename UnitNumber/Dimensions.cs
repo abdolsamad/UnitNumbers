@@ -1,6 +1,6 @@
 ﻿namespace UnitConversionNS
 {
-    public static class Dimensions
+    public struct Dimensions
     {
         public static Dimension Empty => new Dimension();
         public static Dimension Mass => new Dimension(){Mass = 1};
@@ -9,6 +9,8 @@
         public static Dimension Volume => new Dimension(){Length = 3};
         public static Dimension Velocity => new Dimension() { Length = 1,Time = -1 };
         public static Dimension Acceleration => new Dimension() { Length = 1,Time = -2 };
+        public static Dimension Force => new Dimension() { Length = 1,Time = -2,Mass = 1};
+        public static Dimension Pressure => new Dimension() { Length = -1,Time = -2,Mass = 1};
         public static Dimension Time => new Dimension() { Time = 1 };
         public static Dimension Temperature => new Dimension() { Temperature = 1 };
         public static Dimension Current => new Dimension() { Current = 1 };
