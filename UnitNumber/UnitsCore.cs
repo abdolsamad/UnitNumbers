@@ -174,7 +174,7 @@ namespace UnitConversionNS
                         return new Token
                         {
                             Type = TokenType.Unit,
-                            Value = ((Unit) argument1.Value).Pow((int) argument2.Value)
+                            Value = ((Unit) argument1.Value).Pow((short) argument2.Value)
                         };
                     default:
                         throw new ArgumentException(string.Format("Unknown operation \"{0}\".", operation),
@@ -281,14 +281,14 @@ namespace UnitConversionNS
                         i++;
                     }
                     i--;
-                    int sign = 1;
+                    short sign = 1;
                     if (lastToken != null && lastToken.Type == TokenType.Operation && (char) lastToken.Value == '-')
                     {
                         tokens.RemoveAt(tokens.Count - 1);
                         sign = -1;
                     }
 
-                    lastToken = new Token() {Value = sign * Int32.Parse(part), Type = TokenType.Number};
+                    lastToken = new Token() {Value = (short)(sign * Int16.Parse(part)), Type = TokenType.Number};
                     part=String.Empty;
                 }
                 else
