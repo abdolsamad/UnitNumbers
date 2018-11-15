@@ -16,6 +16,9 @@ namespace UnitConversionNS.Tests
         {
             UnitsCore uc = new UnitsCore();
             var cm = new Unit("cm",Dimensions.Length, 0.01);
+            var ft = new Unit("ft",Dimensions.Length, 0.3048);
+            var min = new Unit("min",Dimensions.Time, 60.0);
+            var cfm = new Unit("CFM",ft.Pow(3)/min);
             uc.AddBasicUnit(cm);
             var u1 = uc.ParseUnit("cm");
             Assert.IsTrue(u1==cm);

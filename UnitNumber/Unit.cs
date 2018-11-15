@@ -10,6 +10,7 @@ namespace UnitConversionNS
         private double _sum;
         private bool _isBasic;
         public bool IsBasic => _isBasic;
+        public bool HasOffset => !Utils.IsZero(_sum);
         public Dimension Dimension => _dimension;
 
         public Unit(string identifier, Dimension dimension, double multiplier, double sum = 0.0)
@@ -19,6 +20,14 @@ namespace UnitConversionNS
             _sum = sum;
             _dimension = dimension;
             _isBasic = dimension.IsDimensionless || dimension.IsSingle;
+        }
+        public Unit(string identifier, Unit unit)
+        {
+            _identifier = identifier;
+            _multiplier = unit._multiplier;
+            _sum = unit._sum;
+            _dimension = unit._dimension;
+            _isBasic = unit._isBasic;
         }
 
         private Unit()
@@ -43,7 +52,7 @@ namespace UnitConversionNS
                 _isBasic = false,
                 _multiplier = u1._multiplier * u2._multiplier,
                 _sum = 0,
-                _dimension = u1._dimension + u2._dimension
+                _dimension = u1._dimension * u2._dimension
             };
         }
 
@@ -55,18 +64,18 @@ namespace UnitConversionNS
                 _isBasic = false,
                 _multiplier = u1._multiplier / u2._multiplier,
                 _sum = 0,
-                _dimension = u1._dimension - u2._dimension
+                _dimension = u1._dimension / u2._dimension
             };
         }
 
-        public Unit Pow(int p)
+        public Unit Pow(double p)
         {
             return new Unit
             {
-                _identifier = _identifier + "^" + p,
+                _identifier = $"{_identifier} + ^ + {p:G4}",
                 _isBasic = false,
                 _multiplier = Math.Pow(_multiplier, p),
-                _sum = p == 1 ? _sum : 0,
+                _sum = Utils.DEqual(p, 1) ? _sum : 0,
                 _dimension = _dimension.Pow(p)
             };
         }
@@ -96,9 +105,9 @@ namespace UnitConversionNS
             if (u1 is null) return u2 is null;
             if (u2 is null) return u1 is null;
 
-            return (u1.IsBasic == u2.IsBasic || (Math.Abs(u1._sum) < 1e-8 && Math.Abs(u2._sum) < 1e-8)) &&
-                   u1.Matchable(u2) && Math.Abs(u1._multiplier - u2._multiplier) < 1.0e-8 &&
-                   Math.Abs(u1._sum - u2._sum) < 1.0e-8;
+            return (u1.IsBasic == u2.IsBasic || (Utils.IsZero(u1._sum) && Utils.IsZero(u2._sum))) &&
+                   u1.Matchable(u2) && Utils.DEqual(u1._multiplier, u2._multiplier) &&
+                   Utils.DEqual(u1._sum, u2._sum);
         }
 
         public static bool operator !=(Unit u1, Unit u2)

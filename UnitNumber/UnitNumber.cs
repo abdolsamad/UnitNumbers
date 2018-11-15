@@ -31,9 +31,10 @@ namespace UnitConversionNS
             {
                 double d = Convert.ToDouble(obj);
                 if (this > d) return +1;
-                if (Math.Abs(Number - d) < Math.Max(Number , d)/1e8) return 0;
+                if (Math.Abs(Number - d) < Math.Max(Number, d) / 1e8) return 0;
                 if (this < d) return -1;
-            }else if (obj.GetType() == typeof(UnitNumber))
+            }
+            else if (obj.GetType() == typeof(UnitNumber))
             {
                 var un = (UnitNumber) obj;
                 if (this > un) return +1;
@@ -79,10 +80,30 @@ namespace UnitConversionNS
             return new UnitNumber(un1.Number + un2.GetValue(un1.Unit), un1.Unit);
         }
 
+        public static UnitNumber operator +(UnitNumber un1, double number)
+        {
+            return new UnitNumber(un1.Number + number, un1.Unit);
+        }
+
+        public static UnitNumber operator +(double number, UnitNumber un2)
+        {
+            return new UnitNumber(number + un2.Number, un2.Unit);
+        }
+
         public static UnitNumber operator -(UnitNumber un1, UnitNumber un2)
         {
             ConfirmUnitMatch(un1.Unit, un2.Unit);
             return new UnitNumber(un1.Number - un2.GetValue(un1.Unit), un1.Unit);
+        }
+
+        public static UnitNumber operator -(UnitNumber un1, double number)
+        {
+            return new UnitNumber(un1.Number - number, un1.Unit);
+        }
+
+        public static UnitNumber operator -(double number, UnitNumber un2)
+        {
+            return new UnitNumber(number - un2.Number, un2.Unit);
         }
 
         public static UnitNumber operator *(UnitNumber un1, UnitNumber un2)
@@ -90,9 +111,29 @@ namespace UnitConversionNS
             return new UnitNumber(un1.Number * un2.Number, un1.Unit * un2.Unit);
         }
 
+        public static UnitNumber operator *(double number, UnitNumber un2)
+        {
+            return new UnitNumber(number * un2.Number, un2.Unit);
+        }
+
+        public static UnitNumber operator *(UnitNumber un1, double number)
+        {
+            return new UnitNumber(un1.Number * number, un1.Unit);
+        }
+
         public static UnitNumber operator /(UnitNumber un1, UnitNumber un2)
         {
             return new UnitNumber(un1.Number / un2.Number, un1.Unit / un2.Unit);
+        }
+
+        public static UnitNumber operator /(double number, UnitNumber un2)
+        {
+            return new UnitNumber(number / un2.Number, un2.Unit.Pow(-1));
+        }
+
+        public static UnitNumber operator /(UnitNumber un1, double number)
+        {
+            return new UnitNumber(un1.Number / number, un1.Unit);
         }
 
         public static bool operator >(UnitNumber un1, UnitNumber un2)
@@ -119,44 +160,44 @@ namespace UnitConversionNS
             return un1.GetValueSi() <= un2.GetValueSi();
         }
 
-        public static bool operator >(UnitNumber un1, double n2)
+        public static bool operator >(UnitNumber un1, double number)
         {
-            return un1.Number > n2;
+            return un1.Number > number;
         }
 
-        public static bool operator <(UnitNumber un1, double n2)
+        public static bool operator <(UnitNumber un1, double number)
         {
-            return un1.Number < n2;
+            return un1.Number < number;
         }
 
-        public static bool operator >=(UnitNumber un1, double n2)
+        public static bool operator >=(UnitNumber un1, double number)
         {
-            return un1.Number >= n2;
+            return un1.Number >= number;
         }
 
-        public static bool operator <=(UnitNumber un1, double n2)
+        public static bool operator <=(UnitNumber un1, double number)
         {
-            return un1.Number <= n2;
+            return un1.Number <= number;
         }
 
-        public static bool operator >(double n1, UnitNumber un2)
+        public static bool operator >(double number, UnitNumber un2)
         {
-            return n1 > un2.Number;
+            return number > un2.Number;
         }
 
-        public static bool operator <(double n1, UnitNumber un2)
+        public static bool operator <(double number, UnitNumber un2)
         {
-            return n1 < un2.Number;
+            return number < un2.Number;
         }
 
-        public static bool operator >=(double n1, UnitNumber un2)
+        public static bool operator >=(double number, UnitNumber un2)
         {
-            return n1 >= un2.Number;
+            return number >= un2.Number;
         }
 
-        public static bool operator <=(double n1, UnitNumber un2)
+        public static bool operator <=(double number, UnitNumber un2)
         {
-            return n1 <= un2.Number;
+            return number <= un2.Number;
         }
 
         #endregion
