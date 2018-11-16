@@ -1,10 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 
 namespace UnitConversionNS
 {
     public class Unit
     {
-        private string _identifier;
+        private class IdPowers
+        {
+            public string Identifier;
+            public double Power;
+        }
+
+        private List<IdPowers> _idPowers;
+
+
         private Dimension _dimension;
         private double _multiplier;
         private double _sum;
@@ -15,7 +26,8 @@ namespace UnitConversionNS
 
         public Unit(string identifier, Dimension dimension, double multiplier, double sum = 0.0)
         {
-            _identifier = identifier;
+            _idPowers = new List<IdPowers>();
+            _idPowers.Add(new IdPowers {Identifier = identifier, Power = 1});
             _multiplier = multiplier;
             _sum = sum;
             _dimension = dimension;
@@ -23,15 +35,23 @@ namespace UnitConversionNS
         }
         public Unit(string identifier, Unit unit)
         {
-            _identifier = identifier;
+            _idPowers = new List<IdPowers> {new IdPowers() {Identifier = identifier, Power = 1.0}};
+            _dimension = unit.Dimension.Clone();
             _multiplier = unit._multiplier;
             _sum = unit._sum;
-            _dimension = unit._dimension;
             _isBasic = unit._isBasic;
         }
 
         private Unit()
         {
+        }
+
+        private Unit(List<IdPowers> idPowers, Dimension dimension, double multiplier, double sum)
+        {
+            _idPowers = new List<IdPowers>(idPowers);
+            _dimension = dimension.Clone();
+            _multiplier = multiplier;
+            _sum = sum;
         }
 
         /// <summary>
@@ -46,9 +66,11 @@ namespace UnitConversionNS
 
         public static Unit operator *(Unit u1, Unit u2)
         {
+            List<IdPowers> idp = JoinPowerLists(u1._idPowers, u2._idPowers, +1);
+
             return new Unit
             {
-                _identifier = u1._identifier + "*" + u2._identifier,
+                _idPowers = idp,
                 _isBasic = false,
                 _multiplier = u1._multiplier * u2._multiplier,
                 _sum = 0,
@@ -56,11 +78,39 @@ namespace UnitConversionNS
             };
         }
 
+        private static List<IdPowers> JoinPowerLists(List<IdPowers> powerList1, List<IdPowers> powerList2,
+            short multiplier)
+        {
+            List<IdPowers> result = new List<IdPowers>();
+            foreach (var idPower in powerList1)
+            {
+                result.Add(new IdPowers {Identifier = idPower.Identifier,Power = idPower.Power});
+            }
+            for (int i = 0; i < powerList2.Count; i++)
+            {
+                var item = powerList2[i];
+                var idx = result.FindIndex(x =>
+                    x.Identifier.Equals(item.Identifier, StringComparison.OrdinalIgnoreCase));
+                if (idx < 0)
+                    result.Add(new IdPowers {Power = item.Power*multiplier, Identifier = item.Identifier});
+                else
+                {
+                    result[idx].Power += multiplier * item.Power;
+                    if (Utils.IsZero(result[idx].Power))
+                        result.RemoveAt(idx);
+                }
+            }
+
+            return result;
+        }
+
         public static Unit operator /(Unit u1, Unit u2)
         {
+            var idp = JoinPowerLists(u1._idPowers, u2._idPowers, -1);
+
             return new Unit
             {
-                _identifier = u1._identifier + "/" + u2._identifier,
+                _idPowers = idp,
                 _isBasic = false,
                 _multiplier = u1._multiplier / u2._multiplier,
                 _sum = 0,
@@ -72,12 +122,27 @@ namespace UnitConversionNS
         {
             return new Unit
             {
-                _identifier = $"{_identifier} + ^ + {p:G4}",
+                _idPowers = MultiplyPowerLists(_idPowers, p),
                 _isBasic = false,
                 _multiplier = Math.Pow(_multiplier, p),
                 _sum = Utils.DEqual(p, 1) ? _sum : 0,
                 _dimension = _dimension.Pow(p)
             };
+        }
+
+        private List<IdPowers> MultiplyPowerLists(List<IdPowers> idPowers, double p)
+        {
+            var result = new List<IdPowers>();
+
+            if (Utils.IsZero(p))
+                return result;
+
+            foreach (var idPower in _idPowers)
+            {
+                result.Add(new IdPowers {Identifier = idPower.Identifier,Power = idPower.Power*p});
+            }
+
+            return result;
         }
 
         public double ToSI(double unitValue)
@@ -92,12 +157,21 @@ namespace UnitConversionNS
 
         public Unit Clone()
         {
-            return new Unit(_identifier, _dimension.Clone(), _multiplier, _sum) {_isBasic = _isBasic};
+            return new Unit(_idPowers, _dimension, _multiplier, _sum) {_isBasic = _isBasic};
         }
 
         public override string ToString()
         {
-            return _identifier;
+            string[] resList = new string[_idPowers.Count];
+            for (var i = 0; i < _idPowers.Count; i++)
+            {
+                String part = _idPowers[i].Identifier;
+                if (!Utils.DEqual(_idPowers[i].Power, 1))
+                    part += $"^{_idPowers[i].Power:G4}";
+                resList[i] = part;
+            }
+
+            return String.Join("*", resList);
         }
 
         public static bool operator ==(Unit u1, Unit u2)

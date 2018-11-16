@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace UnitConversionNS
 {
@@ -8,9 +10,11 @@ namespace UnitConversionNS
         private Dictionary<string, Unit> _basicUnits;
         private Dictionary<string, Unit> _complexUnits;
         private Dictionary<char, int> operationPrecedence;
-
+        private Regex unitNumberRegex;
         public UnitsCore()
         {
+            unitNumberRegex = new Regex(@"^(?<number>[0-9.eE+-]+?)(?:\s*\[(?<unit>\s*.+?\s*)\]\s*)?$");
+            
             _basicUnits = new Dictionary<string, Unit>();
             _complexUnits = new Dictionary<string, Unit>();
             operationPrecedence = new Dictionary<char, int>();
@@ -30,7 +34,7 @@ namespace UnitConversionNS
 
         public void AddComplexUnit(Unit unit)
         {
-            _complexUnits.Add(unit.ToString(), unit);
+            _complexUnits.Add(unit.ToString().ToLower(), unit);
         }
 
         public bool Contain(string unit)
@@ -38,6 +42,7 @@ namespace UnitConversionNS
             return _basicUnits.ContainsKey(unit.ToLower()) || _complexUnits.ContainsKey(unit.ToLower());
         }
 
+        #region Parsing
         private enum TokenType
         {
             Unit = 0,
@@ -52,7 +57,6 @@ namespace UnitConversionNS
             public TokenType Type;
             public object Value;
         }
-
         public Unit ParseUnit(string unit)
         {
             unit = unit.ToLower().Trim();
@@ -119,6 +123,22 @@ namespace UnitConversionNS
             return (Unit) valStack.Pop().Value;
         }
 
+        public UnitNumber ParseNumber(string number)
+        {
+            var match = unitNumberRegex.Match(number);
+            if(!match.Success)
+                throw new Exception("Entered value is not a valid number.");
+            Unit unit;
+            if (match.Groups["unit"].Success)
+                unit = ParseUnit(match.Groups["unit"].Value);
+            else
+            {
+                unit = new Unit("",Dimensions.Empty,1);
+            }
+
+            var num = double.Parse(match.Groups["number"].Value);
+            return new UnitNumber(num,unit);
+        }
         private void VerifyResultStack(Stack<Token> resultStack)
         {
             if (resultStack.Count > 1)
@@ -174,7 +194,7 @@ namespace UnitConversionNS
                         return new Token
                         {
                             Type = TokenType.Unit,
-                            Value = ((Unit) argument1.Value).Pow((int) argument2.Value)
+                            Value = ((Unit) argument1.Value).Pow((double) argument2.Value)
                         };
                     default:
                         throw new ArgumentException(string.Format("Unknown operation \"{0}\".", operation),
@@ -241,11 +261,6 @@ namespace UnitConversionNS
             {
                 if (char.IsWhiteSpace(unit[i]))
                 {
-                    /*if (!string.IsNullOrEmpty(part))
-                    {
-                        tokens.Add(new Token(){Value= ParseUnit(part),Type = TokenType.Unit});
-                        part = String.Empty;
-                    }*/
                     continue;
                 }
 
@@ -273,22 +288,17 @@ namespace UnitConversionNS
                     lastToken = new Token() {Value = ParseUnit(part), Type = TokenType.Unit};
                     part = String.Empty;
                 }
-                else if (Char.IsDigit(unit[i]))
+                else if (Char.IsDigit(unit[i]) || unit[i]=='.')//TODO: change . to cultureInfo.NumberFormat.NumberDecimalSeparator
                 {
-                    while (i < unit.Length && Char.IsDigit(unit[i]))
-                    {
-                        part += unit[i];
-                        i++;
-                    }
-                    i--;
-                    int sign = 1;
+                    part = ReadNumber(unit, ref i);
+                    short sign = 1;
                     if (lastToken != null && lastToken.Type == TokenType.Operation && (char) lastToken.Value == '-')
                     {
                         tokens.RemoveAt(tokens.Count - 1);
                         sign = -1;
                     }
 
-                    lastToken = new Token() {Value = sign * Int32.Parse(part), Type = TokenType.Number};
+                    lastToken = new Token() { Value = sign * double.Parse(part), Type = TokenType.Number };
                     part=String.Empty;
                 }
                 else
@@ -302,6 +312,41 @@ namespace UnitConversionNS
             return tokens;
         }
 
+        private string ReadNumber(string unit, ref int i)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            bool reachedDot = false;
+            bool reachedE = false;
+            int start = i;
+            for (; i < unit.Length; i++)
+            {
+                if (unit[i] >= '0' && unit[i] <= '9')
+                {
+                    stringBuilder.Append(unit[i]);
+                }
+                else if (unit[i] == '.' && !reachedDot && !reachedE)
+                {
+                    stringBuilder.Append(unit[i]);
+                    reachedDot = true;
+                }
+                else if ((unit[i] == 'e' || unit[i] == 'E') && !reachedE)
+                {
+                    stringBuilder.Append(unit[i]);
+                    reachedE = true;
+                }
+                else
+                {
+                    if ((unit[i] != '+' && unit[i] != '-') || i == start || (unit[i - 1] != 'E' && unit[i - 1] != 'e'))
+                    {
+                        break;
+                    }
+                    stringBuilder.Append(unit[i]);
+                }
+            }
+            i--;
+            return stringBuilder.ToString();
+        }
+
         private bool IsMixedUnit(string unit)
         {
             var ops = new List<char>(new[] {'(', ')', '*', '/', '-', '^'});
@@ -313,5 +358,6 @@ namespace UnitConversionNS
 
             return false;
         }
+        #endregion
     }
 }
