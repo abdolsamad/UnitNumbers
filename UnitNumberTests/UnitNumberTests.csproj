@@ -51,6 +51,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ExpressionParsing\AstBuilderTests.cs" />
+    <Compile Include="ExpressionParsing\Tokenizer\TokenReaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitNumberTests.cs" />
     <Compile Include="UnitsCoreTests.cs" />

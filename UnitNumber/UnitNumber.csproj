@@ -42,8 +42,46 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dimensions.cs" />
-    <Compile Include="DimensionType.cs" />
-    <Compile Include="Extensions\Math.cs" />
+    <Compile Include="Exceptions\VariableNotDefinedException.cs" />
+    <Compile Include="Exceptions\ParseException.cs" />
+    <Compile Include="ExpressionParsing\AstBuilder.cs" />
+    <Compile Include="ExpressionParsing\CalculationEngine.cs" />
+    <Compile Include="ExpressionParsing\DataType.cs" />
+    <Compile Include="ExpressionParsing\Execution\ConstantInfo.cs" />
+    <Compile Include="ExpressionParsing\Execution\ConstantRegistry.cs" />
+    <Compile Include="ExpressionParsing\Execution\DynamicCompiler.cs" />
+    <Compile Include="ExpressionParsing\Execution\ExecutionMode.cs" />
+    <Compile Include="ExpressionParsing\Execution\ExecutionResult.cs" />
+    <Compile Include="ExpressionParsing\Execution\FormulaBuilder.cs" />
+    <Compile Include="ExpressionParsing\Execution\FunctionInfo.cs" />
+    <Compile Include="ExpressionParsing\Execution\FunctionRegistry.cs" />
+    <Compile Include="ExpressionParsing\Execution\IConstantRegistry.cs" />
+    <Compile Include="ExpressionParsing\Execution\IExecutor.cs" />
+    <Compile Include="ExpressionParsing\Execution\IFunctionRegistry.cs" />
+    <Compile Include="ExpressionParsing\Execution\Interpreter.cs" />
+    <Compile Include="ExpressionParsing\Execution\ParameterInfo.cs" />
+    <Compile Include="ExpressionParsing\FormulaContext.cs" />
+    <Compile Include="ExpressionParsing\Operations\Addition.cs" />
+    <Compile Include="ExpressionParsing\Operations\Constant.cs" />
+    <Compile Include="ExpressionParsing\Operations\Division.cs" />
+    <Compile Include="ExpressionParsing\Operations\Exponentiation.cs" />
+    <Compile Include="ExpressionParsing\Operations\Function.cs" />
+    <Compile Include="ExpressionParsing\Operations\Modulo.cs" />
+    <Compile Include="ExpressionParsing\Operations\Multiplication.cs" />
+    <Compile Include="ExpressionParsing\Operations\Operation.cs" />
+    <Compile Include="ExpressionParsing\Operations\ChangeUnit.cs" />
+    <Compile Include="ExpressionParsing\Operations\Subtraction.cs" />
+    <Compile Include="ExpressionParsing\Operations\UnaryMinus.cs" />
+    <Compile Include="ExpressionParsing\Operations\Variable.cs" />
+    <Compile Include="ExpressionParsing\Optimizer.cs" />
+    <Compile Include="ExpressionParsing\Tokenizer\Token.cs" />
+    <Compile Include="ExpressionParsing\Tokenizer\TokenReader.cs" />
+    <Compile Include="ExpressionParsing\Tokenizer\TokenType.cs" />
+    <Compile Include="ExpressionParsing\Util\EngineUtil.cs" />
+    <Compile Include="ExpressionParsing\Util\FuncAdapter.cs" />
+    <Compile Include="ExpressionParsing\Util\MathUtil.cs" />
+    <Compile Include="ExpressionParsing\Util\MemoryCache.cs" />
+    <Compile Include="ExpressionParsing\Util\TypeExtensions.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitNumber.cs" />
@@ -51,5 +89,6 @@
     <Compile Include="UnitsCore.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
