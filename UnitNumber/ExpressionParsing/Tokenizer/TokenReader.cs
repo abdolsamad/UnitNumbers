@@ -167,7 +167,6 @@ namespace UnitConversionNS.ExpressionParsing.Tokenizer
                         case '*':
                         case '/':
                         case '^':
-                        case '%':
                             if (IsUnaryMinus(characters[i], tokens))
                             {
                                 // We use the token '_' for a unary minus in the AST builder

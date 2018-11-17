@@ -106,6 +106,10 @@ namespace UnitConversionNS
             return new UnitNumber(number - un2.Number, un2.Unit);
         }
 
+        public static UnitNumber operator -(UnitNumber un)
+        {
+            return new UnitNumber(-un.Number,un.Unit);
+        }
         public static UnitNumber operator *(UnitNumber un1, UnitNumber un2)
         {
             return new UnitNumber(un1.Number * un2.Number, un1.Unit * un2.Unit);

@@ -11,22 +11,22 @@ namespace UnitConversionNS.ExpressionParsing.Execution
     public class Interpreter : IExecutor
     {
         public Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(Operation operation, 
-            IFunctionRegistry functionRegistry)
+            IFunctionRegistry functionRegistry,UnitsCore core)
         { 
             return variables =>
                 {
                     variables = EngineUtil.ConvertVariableNamesToLowerCase(variables);
-                    return Execute(operation, functionRegistry, variables);
+                    return Execute(operation, functionRegistry, variables, core);
                 };
         }
 
-        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry)
+        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry,UnitsCore core)
         {
-            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>());
+            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>(),core);
         }
 
         public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry, 
-            IDictionary<string, ExecutionResult> variables)
+            IDictionary<string, ExecutionResult> variables,UnitsCore core)
         {
             if (operation == null)
                 throw new ArgumentNullException("operation");
@@ -39,7 +39,7 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             else if (operation.GetType() == typeof(FloatingPointConstant))
             {
                 FloatingPointConstant constant = (FloatingPointConstant)operation;
-                return new ExecutionResult(DataType.UnitNumber, constant.Value);
+                return new ExecutionResult(DataType.Number, constant.Value);
             }
             else if (operation.GetType() == typeof(Variable))
             {
@@ -56,48 +56,55 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             else if (operation.GetType() == typeof(Multiplication))
             {
                 Multiplication multiplication = (Multiplication)operation;
-                var executionResult1 = Execute(multiplication.Argument1, functionRegistry, variables);
-                var executionResult2 = Execute(multiplication.Argument2, functionRegistry, variables);
+                var executionResult1 = Execute(multiplication.Argument1, functionRegistry, variables,core);
+                var executionResult2 = Execute(multiplication.Argument2, functionRegistry, variables,core);
                 return ExecuteMultiplication(executionResult1, executionResult2);
                 
             }
             else if (operation.GetType() == typeof(Addition))
             {
                 Addition addition = (Addition)operation;
-                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables);
-                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables);
+                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables,core);
+                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables,core);
                 return ExecuteAddition(executionResult1, executionResult2); ;
             }
             else if (operation.GetType() == typeof(Subtraction))
             {
                 Subtraction addition = (Subtraction)operation;
-                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables);
-                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables);
+                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables,core);
+                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables,core);
                 return ExecuteSubtraction(executionResult1, executionResult2);
             }
             else if (operation.GetType() == typeof(Division))
             {
                 Division division = (Division)operation;
-                var executionResult1 = Execute(division.Dividend, functionRegistry, variables);
-                var executionResult2 = Execute(division.Divisor, functionRegistry, variables);
+                var executionResult1 = Execute(division.Dividend, functionRegistry, variables,core);
+                var executionResult2 = Execute(division.Divisor, functionRegistry, variables, core);
                 return ExecuteDivision(executionResult1, executionResult2);
-            }
-            else if (operation.GetType() == typeof(Modulo))
-            {
-                Modulo division = (Modulo)operation;
-                return Execute(division.Dividend, functionRegistry, variables) % Execute(division.Divisor, functionRegistry, variables);
             }
             else if (operation.GetType() == typeof(Exponentiation))
             {
                 Exponentiation exponentiation = (Exponentiation)operation;
-                var executionResult1 = Execute(exponentiation.Base, functionRegistry, variables);
-                var executionResult2 = Execute(exponentiation.Exponent, functionRegistry, variables);
+                var executionResult1 = Execute(exponentiation.Base, functionRegistry, variables, core);
+                var executionResult2 = Execute(exponentiation.Exponent, functionRegistry, variables, core);
                 return ExecuteExponentiation(executionResult1, executionResult2);
+            }
+            else if (operation.GetType() == typeof(ChangeUnit))
+            {
+                ChangeUnit exponentiation = (ChangeUnit)operation;
+                var executionResult1 = Execute(exponentiation.Argument1, functionRegistry, variables, core);
+                return ExecuteUnitChange(executionResult1, exponentiation.Unit,core);
             }
             else if (operation.GetType() == typeof(UnaryMinus))
             {
                 UnaryMinus unaryMinus = (UnaryMinus)operation;
-                return -Execute(unaryMinus.Argument, functionRegistry, variables);
+                var executionResult = Execute(unaryMinus.Argument, functionRegistry, variables, core);
+                if(executionResult.DataType == DataType.Number)
+                    return new ExecutionResult( DataType.Number,-(double)executionResult.Value);
+                else
+                {
+                        return new ExecutionResult(DataType.UnitNumber, -(UnitNumber)executionResult.Value);
+                }
             }
             else if (operation.GetType() == typeof(Function))
             {
@@ -105,9 +112,9 @@ namespace UnitConversionNS.ExpressionParsing.Execution
 
                 FunctionInfo functionInfo = functionRegistry.GetFunctionInfo(function.FunctionName);
 
-                double[] arguments = new double[functionInfo.IsDynamicFunc ? function.Arguments.Count : functionInfo.NumberOfParameters];
+                ExecutionResult[] arguments = new ExecutionResult[functionInfo.IsDynamicFunc ? function.Arguments.Count : functionInfo.NumberOfParameters];
                 for (int i = 0; i < arguments.Length; i++)
-                    arguments[i] = Execute(function.Arguments[i], functionRegistry, variables);
+                    arguments[i] = Execute(function.Arguments[i], functionRegistry, variables, core);
 
                 return Invoke(functionInfo.Function, arguments);
             }
@@ -116,6 +123,24 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 throw new ArgumentException(string.Format("Unsupported operation \"{0}\".", operation.GetType().FullName), "operation");
             }
         }
+
+        private ExecutionResult ExecuteUnitChange(ExecutionResult executionResult1, string unit,UnitsCore core)
+        {
+            if (executionResult1.DataType == DataType.Number)
+            {
+                var un = new UnitNumber((double)executionResult1.Value,core.ParseUnit(unit));
+                return new ExecutionResult( DataType.UnitNumber,un);
+            }
+            else if (executionResult1.DataType == DataType.UnitNumber)
+            {
+                var un = (UnitNumber)executionResult1.Value;
+                var newUnit = core.ParseUnit(unit);
+                
+                return new ExecutionResult(DataType.UnitNumber, new UnitNumber(newUnit.FromSI(un.GetValueSi()),newUnit));
+            }
+            throw new Exception("Bad type");
+        }
+
 
         private ExecutionResult ExecuteExponentiation(ExecutionResult executionResult1, ExecutionResult executionResult2)
         {
@@ -142,12 +167,14 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, Math.Pow(num1,num2));
+                    return new ExecutionResult(DataType.UnitNumber, Extensions.Math.Pow(num1,num2));
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 * num2);
+                    if (!num2.Unit.Dimension.IsDimensionless)
+                        throw new Exception("Raising to a power with unit is not defined.");
+                    return new ExecutionResult(DataType.UnitNumber, Extensions.Math.Pow(num1, num2.Number));
                 }
             }
         }
@@ -284,84 +311,84 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             }
         }
 
-        private double Invoke(Delegate function, double[] arguments)
+        private ExecutionResult Invoke(Delegate function, ExecutionResult[] arguments)
         {
             // DynamicInvoke is slow, so we first try to convert it to a Func
-            if (function is Func<double>)
+            if (function is Func<ExecutionResult>)
             {
-                return ((Func<double>)function).Invoke();
+                return ((Func<ExecutionResult>)function).Invoke();
             }
-            else if (function is Func<double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double>)function).Invoke(arguments[0]);
+                return ((Func<ExecutionResult, ExecutionResult>)function).Invoke(arguments[0]);
             }
-            else if (function is Func<double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double>)function).Invoke(arguments[0], arguments[1]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1]);
             }
-            else if (function is Func<double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2]);
             }
-            else if (function is Func<double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3]);
             }
-            else if (function is Func<double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
             }
-            else if (function is Func<double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12], arguments[13]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12], arguments[13]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12], arguments[13], arguments[14]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12], arguments[13], arguments[14]);
             }
-            else if (function is Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>)
+            else if (function is Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)
             {
-                return ((Func<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12], arguments[13], arguments[14], arguments[15]);
+                return ((Func<ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult, ExecutionResult>)function).Invoke(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8], arguments[9], arguments[10], arguments[11], arguments[12], arguments[13], arguments[14], arguments[15]);
             }
-            else if (function is DynamicFunc<double, double>)
+            else if (function is DynamicFunc<ExecutionResult, ExecutionResult>)
             {
-                return ((DynamicFunc<double, double>)function).Invoke(arguments);
+                return ((DynamicFunc<ExecutionResult, ExecutionResult>)function).Invoke(arguments);
             }
             else
             {
-                return (double)function.DynamicInvoke((from s in arguments select (object)s).ToArray());
+                return (ExecutionResult)function.DynamicInvoke((from s in arguments select (object)s).ToArray());
             }
         }
     }

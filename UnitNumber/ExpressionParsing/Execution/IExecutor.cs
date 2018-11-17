@@ -7,9 +7,9 @@ namespace UnitConversionNS.ExpressionParsing.Execution
 {
     public interface IExecutor
     {
-        ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry);
-        ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry, IDictionary<string, ExecutionResult> variables);
+        ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry,UnitsCore core);
+        ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry, IDictionary<string, ExecutionResult> variables, UnitsCore core);
 
-        Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(Operation operation, IFunctionRegistry functionRegistry);
+        Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(Operation operation, IFunctionRegistry functionRegistry, UnitsCore core);
     }
 }

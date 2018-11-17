@@ -20,19 +20,19 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 typeof(Func<double, double, double, double, double, double, double, double, double, double>).GetType().Assembly.FullName;
         }
 
-        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry)
+        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry,UnitsCore core)
         {
-            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>());
+            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>(),core);
         }
 
         public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry, 
-            IDictionary<string, ExecutionResult> variables)
+            IDictionary<string, ExecutionResult> variables, UnitsCore core)
         {
-            return BuildFormula(operation, functionRegistry)(variables);
+            return BuildFormula(operation, functionRegistry,core)(variables);
         }
 
         public Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(Operation operation,
-            IFunctionRegistry functionRegistry)
+            IFunctionRegistry functionRegistry,UnitsCore core)
         {
             Func<FormulaContext, ExecutionResult> func = BuildFormulaInternal(operation, functionRegistry);
             return variables =>
@@ -53,7 +53,7 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             return Expression.Lambda<Func<FormulaContext, ExecutionResult>>(
                 Expression.Block(
                     Expression.Return(returnLabel, GenerateMethodBody(operation, contextParameter, functionRegistry)),
-                    Expression.Label(returnLabel, Expression.Constant(0.0))
+                    Expression.Label(returnLabel, Expression.Constant(new ExecutionResult(DataType.Number,0)))
                 ),
                 contextParameter
             ).Compile();
@@ -69,7 +69,7 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             {
                 var constant = (UnitNumberConstant)operation;
 
-                return Expression.Convert(Expression.Constant(constant.Value, typeof(int)), typeof(double));
+                return Expression.Constant(constant.Value, typeof(UnitNumber));
             }
             else if (operation.GetType() == typeof(FloatingPointConstant))
             {
@@ -139,14 +139,6 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 Expression divisor = GenerateMethodBody(division.Divisor, contextParameter, functionRegistry);
 
                 return Expression.Divide(dividend, divisor);
-            }
-            else if (operation.GetType() == typeof(Modulo))
-            {
-                Modulo modulo = (Modulo)operation;
-                Expression dividend = GenerateMethodBody(modulo.Dividend, contextParameter, functionRegistry);
-                Expression divisor = GenerateMethodBody(modulo.Divisor, contextParameter, functionRegistry);
-
-                return Expression.Modulo(dividend, divisor);
             }
             else if (operation.GetType() == typeof(Exponentiation))
             {

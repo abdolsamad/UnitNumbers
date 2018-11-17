@@ -66,7 +66,6 @@
     <Compile Include="ExpressionParsing\Operations\Division.cs" />
     <Compile Include="ExpressionParsing\Operations\Exponentiation.cs" />
     <Compile Include="ExpressionParsing\Operations\Function.cs" />
-    <Compile Include="ExpressionParsing\Operations\Modulo.cs" />
     <Compile Include="ExpressionParsing\Operations\Multiplication.cs" />
     <Compile Include="ExpressionParsing\Operations\Operation.cs" />
     <Compile Include="ExpressionParsing\Operations\ChangeUnit.cs" />
@@ -82,6 +81,7 @@
     <Compile Include="ExpressionParsing\Util\MathUtil.cs" />
     <Compile Include="ExpressionParsing\Util\MemoryCache.cs" />
     <Compile Include="ExpressionParsing\Util\TypeExtensions.cs" />
+    <Compile Include="Extensions\Math.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitNumber.cs" />

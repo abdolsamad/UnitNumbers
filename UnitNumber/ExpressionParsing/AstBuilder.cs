@@ -31,7 +31,6 @@ namespace UnitConversionNS.ExpressionParsing
             operationPrecedence.Add('_', 2);
             operationPrecedence.Add('*', 3);
             operationPrecedence.Add('/', 3);
-            operationPrecedence.Add('%', 3);
             operationPrecedence.Add('^', 4);
         }
 
@@ -200,12 +199,6 @@ namespace UnitConversionNS.ExpressionParsing
                         dataType = RequiredDataType(divisor, divident);
 
                         return new Division(dataType, divident, divisor);
-                    case '%':
-                        divisor = resultStack.Pop();
-                        divident = resultStack.Pop();
-                        dataType = RequiredDataType(divisor, divident);
-
-                        return new Modulo(dataType, divident, divisor);
                     case '_':
                         argument1 = resultStack.Pop();
 
