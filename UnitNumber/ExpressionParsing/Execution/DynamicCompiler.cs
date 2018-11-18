@@ -8,7 +8,7 @@ using UnitConversionNS.ExpressionParsing.Util;
 
 namespace UnitConversionNS.ExpressionParsing.Execution
 {
-    public class DynamicCompiler : IExecutor
+    internal class DynamicCompiler : IExecutor
     {
         private string FuncAssemblyQualifiedName;
 
@@ -51,11 +51,11 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             LabelTarget returnLabel = Expression.Label(typeof(ExecutionResult));
 
             return Expression.Lambda<Func<FormulaContext, ExecutionResult>>(
-                Expression.Block(
+                Expression.Block(//block as a body
                     Expression.Return(returnLabel, GenerateMethodBody(operation, contextParameter, functionRegistry)),
                     Expression.Label(returnLabel, Expression.Constant(new ExecutionResult(DataType.Number,0)))
                 ),
-                contextParameter
+                contextParameter//parameter
             ).Compile();
         }
 
@@ -68,14 +68,14 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             if (operation.GetType() == typeof(UnitNumberConstant))
             {
                 var constant = (UnitNumberConstant)operation;
-
-                return Expression.Constant(constant.Value, typeof(UnitNumber));
+                var ret = new ExecutionResult(DataType.UnitNumber,constant.Value);
+                return Expression.Constant(ret, typeof(ExecutionResult));
             }
             else if (operation.GetType() == typeof(FloatingPointConstant))
             {
                 FloatingPointConstant constant = (FloatingPointConstant)operation;
-
-                return Expression.Constant(constant.Value, typeof(double));
+                var ret = new ExecutionResult(DataType.Number, constant.Value);
+                return Expression.Constant(ret, typeof(ExecutionResult));
             }
             else if (operation.GetType() == typeof(Variable))
             {

@@ -1,6 +1,6 @@
 ﻿namespace UnitConversionNS.ExpressionParsing.Execution
 {
-    public struct ParameterInfo
+    internal struct ParameterInfo
     {
         public string Name;
         public DataType DataType;

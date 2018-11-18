@@ -14,7 +14,7 @@ namespace UnitConversionNS.ExpressionParsing.Util
     /// An adapter for creating a func wrapper around a func accepting a dictionary. The wrapper
     /// can create a func that has an argument for every expected key in the dictionary.
     /// </summary>
-    public class FuncAdapter
+    internal class FuncAdapter
     {
         /// <summary>
         /// Wrap the parsed the function into a delegate of the specified type. The delegate must accept 

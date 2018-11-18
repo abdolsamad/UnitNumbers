@@ -40,9 +40,17 @@ namespace UnitConversionNS.ExpressionParsing.Tests
         public void CalculateTest()
         {
             UnitsCore uc = new UnitsCore();
-            uc.AddComplexUnit(new Unit("Pa",Dimensions.Pressure,1.0));
+            var inch = new Unit("in",Dimensions.Length, 0.0254);
+            var foot = new Unit("ft", 12*inch);
+            var sec = new Unit("s", Dimensions.Time, 1.0);
+            var min = new Unit("min", Dimensions.Time, 60);
+            var cfm = new Unit( "CFM",foot.Pow(3) / min);
+            uc.RegisterUnit(cfm);
+            uc.RegisterUnit(inch);
+            uc.RegisterUnit(foot);
+            uc.RegisterUnit(sec);
             var ce=new CalculationEngine(uc);
-            var res = ce.Calculate("-1+2-3[Pa]^2*33.21+1e-8");
+            var res = ce.Calculate("((40[cfm]/4)/3[in^2])[ft/s]");
         }
 
         [TestMethod()]

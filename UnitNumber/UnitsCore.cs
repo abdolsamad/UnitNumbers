@@ -7,16 +7,14 @@ namespace UnitConversionNS
 {
     public class UnitsCore
     {
-        private Dictionary<string, Unit> _basicUnits;
-        private Dictionary<string, Unit> _complexUnits;
+        private Dictionary<string, Unit> _units;
         private Dictionary<char, int> operationPrecedence;
         private Regex unitNumberRegex;
         public UnitsCore()
         {
             unitNumberRegex = new Regex(@"^(?<number>[0-9.eE+-]+?)(?:\s*\[(?<unit>\s*.+?\s*)\]\s*)?$");
             
-            _basicUnits = new Dictionary<string, Unit>();
-            _complexUnits = new Dictionary<string, Unit>();
+            _units = new Dictionary<string, Unit>();
             operationPrecedence = new Dictionary<char, int>();
             operationPrecedence.Add('(', 0);
             operationPrecedence.Add('*', 1);
@@ -25,21 +23,15 @@ namespace UnitConversionNS
             operationPrecedence.Add('^', 2);
         }
 
-        public void AddBasicUnit(Unit unit)
-        {
-            if (!unit.IsBasic)
-                throw new Exception("Unit is not basic!");
-            _basicUnits.Add(unit.ToString().ToLower(), unit);
-        }
 
-        public void AddComplexUnit(Unit unit)
+        public void RegisterUnit(Unit unit)
         {
-            _complexUnits.Add(unit.ToString().ToLower(), unit);
+            _units.Add(unit.ToString().ToLower(), unit);
         }
 
         public bool Contain(string unit)
         {
-            return _basicUnits.ContainsKey(unit.ToLower()) || _complexUnits.ContainsKey(unit.ToLower());
+            return _units.ContainsKey(unit.ToLower());
         }
 
         #region Parsing
@@ -62,10 +54,8 @@ namespace UnitConversionNS
             unit = unit.ToLower().Trim();
             if (!IsMixedUnit(unit))
             {
-                if (_basicUnits.ContainsKey(unit))
-                    return _basicUnits[unit];
-                if (_complexUnits.ContainsKey(unit))
-                    return _complexUnits[unit];
+                if (_units.ContainsKey(unit))
+                    return _units[unit];
                 else
                 {
                     throw new Exception($"Unit ({unit}) not found!");

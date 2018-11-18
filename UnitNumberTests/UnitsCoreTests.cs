@@ -15,8 +15,8 @@ namespace UnitConversionNS.Tests
             var s = new Unit("s",Dimensions.Time, 1.0);
             var cfm = new Unit("CFM",ft.Pow(3)/min);
 
-            uc.AddBasicUnit(cm);
-            uc.AddBasicUnit(s);
+            uc.RegisterUnit(cm);
+            uc.RegisterUnit(s);
             var u1 = uc.ParseUnit("cm");
             Assert.IsTrue(u1 == cm);
             var u2 = uc.ParseUnit("cm*cm");
@@ -35,7 +35,7 @@ namespace UnitConversionNS.Tests
         {
             UnitsCore uc = new UnitsCore();
             var kPa = new Unit("kPa", Dimensions.Pressure, 1000);
-            uc.AddComplexUnit(kPa);
+            uc.RegisterUnit(kPa);
             var un = uc.ParseNumber("101.325[kPa]");
             Assert.AreEqual(un.Number,101.325,1e-8);
             Assert.IsTrue(un.Unit==kPa);

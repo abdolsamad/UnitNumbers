@@ -7,6 +7,7 @@ namespace UnitConversionNS
 {
     public class Unit
     {
+        private static int _counter = 0;
         private class IdPowers
         {
             public string Identifier;
@@ -30,7 +31,7 @@ namespace UnitConversionNS
             _idPowers.Add(new IdPowers {Identifier = identifier, Power = 1});
             _multiplier = multiplier;
             _sum = sum;
-            _dimension = dimension;
+            _dimension = dimension.Clone();
             _isBasic = dimension.IsDimensionless || dimension.IsSingle;
         }
         public Unit(string identifier, Unit unit)
@@ -187,6 +188,14 @@ namespace UnitConversionNS
         public static bool operator !=(Unit u1, Unit u2)
         {
             return !(u1 == u2);
+        }
+
+        public static Unit operator *(double mult,Unit u)
+        {
+            return new Unit($"unit_{_counter++}",u.Dimension,u._multiplier*mult,u._sum)
+            {
+                _isBasic = u.IsBasic
+            };
         }
     }
 }

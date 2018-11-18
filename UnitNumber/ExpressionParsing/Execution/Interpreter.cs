@@ -8,7 +8,7 @@ using UnitConversionNS.ExpressionParsing.Util;
 
 namespace UnitConversionNS.ExpressionParsing.Execution
 {
-    public class Interpreter : IExecutor
+    internal class Interpreter : IExecutor
     {
         public Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(Operation operation, 
             IFunctionRegistry functionRegistry,UnitsCore core)
@@ -136,7 +136,7 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 var un = (UnitNumber)executionResult1.Value;
                 var newUnit = core.ParseUnit(unit);
                 
-                return new ExecutionResult(DataType.UnitNumber, new UnitNumber(newUnit.FromSI(un.GetValueSi()),newUnit));
+                return new ExecutionResult(DataType.UnitNumber, new UnitNumber(newUnit.FromSI(un.GetValueSi()), newUnit));
             }
             throw new Exception("Bad type");
         }

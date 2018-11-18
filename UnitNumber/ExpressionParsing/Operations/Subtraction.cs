@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace UnitConversionNS.ExpressionParsing.Operations
+﻿namespace UnitConversionNS.ExpressionParsing.Operations
 {
     public class Subtraction : Operation
     {
