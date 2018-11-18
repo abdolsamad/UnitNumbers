@@ -34,12 +34,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             if (operation.GetType() == typeof(UnitNumberConstant))
             {
                 UnitNumberConstant constant = (UnitNumberConstant)operation;
-                return new ExecutionResult(DataType.UnitNumber, constant.Value);
+                return new ExecutionResult(constant.Value);
             }
             else if (operation.GetType() == typeof(FloatingPointConstant))
             {
                 FloatingPointConstant constant = (FloatingPointConstant)operation;
-                return new ExecutionResult(DataType.Number, constant.Value);
+                return new ExecutionResult(constant.Value);
             }
             else if (operation.GetType() == typeof(Variable))
             {
@@ -100,10 +100,10 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 UnaryMinus unaryMinus = (UnaryMinus)operation;
                 var executionResult = Execute(unaryMinus.Argument, functionRegistry, variables, core);
                 if(executionResult.DataType == DataType.Number)
-                    return new ExecutionResult( DataType.Number,-(double)executionResult.Value);
+                    return new ExecutionResult( -(double)executionResult.Value);
                 else
                 {
-                        return new ExecutionResult(DataType.UnitNumber, -(UnitNumber)executionResult.Value);
+                        return new ExecutionResult( -(UnitNumber)executionResult.Value);
                 }
             }
             else if (operation.GetType() == typeof(Function))
@@ -129,14 +129,14 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             if (executionResult1.DataType == DataType.Number)
             {
                 var un = new UnitNumber((double)executionResult1.Value,core.ParseUnit(unit));
-                return new ExecutionResult( DataType.UnitNumber,un);
+                return new ExecutionResult( un);
             }
             else if (executionResult1.DataType == DataType.UnitNumber)
             {
                 var un = (UnitNumber)executionResult1.Value;
                 var newUnit = core.ParseUnit(unit);
                 
-                return new ExecutionResult(DataType.UnitNumber, new UnitNumber(newUnit.FromSI(un.GetValueSi()), newUnit));
+                return new ExecutionResult( new UnitNumber(newUnit.FromSI(un.GetValueSi()), newUnit));
             }
             throw new Exception("Bad type");
         }
@@ -150,14 +150,14 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.Number, Math.Pow(num1, num2));
+                    return new ExecutionResult(Math.Pow(num1, num2));
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
                     if(!num2.Unit.Dimension.IsDimensionless)
                         throw new Exception("Raising to a power with unit is not defined.");
-                    return new ExecutionResult(DataType.Number, Math.Pow(num1 ,num2.Number));
+                    return new ExecutionResult( Math.Pow(num1 ,num2.Number));
                 }
             }
             else
@@ -167,14 +167,14 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, Extensions.Math.Pow(num1,num2));
+                    return new ExecutionResult(Extensions.Math.Pow(num1,num2));
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
                     if (!num2.Unit.Dimension.IsDimensionless)
                         throw new Exception("Raising to a power with unit is not defined.");
-                    return new ExecutionResult(DataType.UnitNumber, Extensions.Math.Pow(num1, num2.Number));
+                    return new ExecutionResult(Extensions.Math.Pow(num1, num2.Number));
                 }
             }
         }
@@ -187,12 +187,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.Number, num1 / num2);
+                    return new ExecutionResult(num1 / num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 / num2);
+                    return new ExecutionResult(num1 / num2);
                 }
             }
             else
@@ -202,12 +202,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 / num2);
+                    return new ExecutionResult( num1 / num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 / num2);
+                    return new ExecutionResult(num1 / num2);
                 }
             }
         }
@@ -220,12 +220,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.Number, num1 - num2);
+                    return new ExecutionResult(num1 - num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 - num2);
+                    return new ExecutionResult( num1 - num2);
                 }
             }
             else
@@ -235,12 +235,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 - num2);
+                    return new ExecutionResult(num1 - num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 - num2);
+                    return new ExecutionResult(num1 - num2);
                 }
             }
         }
@@ -253,12 +253,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.Number, num1 + num2);
+                    return new ExecutionResult(num1 + num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 + num2);
+                    return new ExecutionResult( num1 + num2);
                 }
             }
             else
@@ -268,12 +268,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 + num2);
+                    return new ExecutionResult(num1 + num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber)executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 + num2);
+                    return new ExecutionResult(num1 + num2);
                 }
             }
         }
@@ -286,12 +286,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double) executionResult2.Value;
-                    return new ExecutionResult(DataType.Number, num1 * num2);
+                    return new ExecutionResult( num1 * num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber) executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 * num2);
+                    return new ExecutionResult( num1 * num2);
                 }
             }
             else
@@ -301,12 +301,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 if (executionResult2.DataType == DataType.Number)
                 {
                     var num2 = (double) executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 * num2);
+                    return new ExecutionResult(num1 * num2);
                 }
                 else
                 {
                     var num2 = (UnitNumber) executionResult2.Value;
-                    return new ExecutionResult(DataType.UnitNumber, num1 * num2);
+                    return new ExecutionResult(num1 * num2);
                 }
             }
         }

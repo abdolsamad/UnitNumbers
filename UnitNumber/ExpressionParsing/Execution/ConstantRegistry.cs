@@ -77,12 +77,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
 
         public void RegisterConstant(string constantName, double value, bool isOverWritable)
         {
-            RegisterConstant(constantName,new ExecutionResult(DataType.Number,value),isOverWritable);
+            RegisterConstant(constantName,new ExecutionResult(value),isOverWritable);
         }
 
         public void RegisterConstant(string constantName, UnitNumber value, bool isOverWritable)
         {
-            RegisterConstant(constantName, new ExecutionResult(DataType.UnitNumber, value), isOverWritable);
+            RegisterConstant(constantName, new ExecutionResult(value), isOverWritable);
         }
 
         public void UnregisterConstant(string constantName,bool force= false)
