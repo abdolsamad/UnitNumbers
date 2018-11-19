@@ -168,8 +168,8 @@ namespace UnitConversionNS.ExpressionParsing.Execution
 
                 if (functionInfo.IsDynamicFunc)
                 {
-                    funcType = typeof(DynamicFunc<double, double>);
-                    parameterTypes = new Type[] {typeof(double[])};
+                    funcType = typeof(DynamicFunc<ExecutionResult, ExecutionResult>);
+                    parameterTypes = new Type[] {typeof(ExecutionResult[])};
 
 
                     Expression[] arrayArguments = new Expression[function.Arguments.Count];
@@ -178,13 +178,13 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                             GenerateMethodBody(function.Arguments[i], contextParameter, functionRegistry);
 
                     arguments = new Expression[1];
-                    arguments[0] = NewArrayExpression.NewArrayInit(typeof(double), arrayArguments);
+                    arguments[0] = Expression.NewArrayInit(typeof(ExecutionResult), arrayArguments);
                 }
                 else
                 {
                     funcType = GetFuncType(functionInfo.NumberOfParameters);
                     parameterTypes = (from i in Enumerable.Range(0, functionInfo.NumberOfParameters)
-                        select typeof(double)).ToArray();
+                        select typeof(ExecutionResult)).ToArray();
 
                     arguments = new Expression[functionInfo.NumberOfParameters];
                     for (int i = 0; i < functionInfo.NumberOfParameters; i++)
@@ -226,7 +226,7 @@ namespace UnitConversionNS.ExpressionParsing.Execution
 
             Type[] typeArguments = new Type[numberOfParameters + 1];
             for (int i = 0; i < typeArguments.Length; i++)
-                typeArguments[i] = typeof(double);
+                typeArguments[i] = typeof(ExecutionResult);
 
             return funcType.MakeGenericType(typeArguments);
         }

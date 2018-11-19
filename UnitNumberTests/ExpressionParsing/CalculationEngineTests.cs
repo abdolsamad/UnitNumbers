@@ -55,8 +55,10 @@ namespace UnitConversionNS.ExpressionParsing.Tests
             var vars = new Dictionary<string, ExecutionResult>();
             vars.Add("A", new ExecutionResult(1));
             vars.Add("B", new ExecutionResult(new UnitNumber(1, foot)));
-            res = ce.Calculate("2*A+B+A^1+1+5",vars);
+            res = ce.Calculate("A",vars);
+            res = ce.Calculate("pi",vars);
             res = ce.Calculate("sin(3.141592653)",vars);
+            res = ce.Calculate("sin(pi)",vars);
         }
 
         [TestMethod()]

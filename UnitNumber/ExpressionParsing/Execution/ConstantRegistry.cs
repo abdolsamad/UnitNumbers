@@ -70,10 +70,6 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                 constants.Add(constantName, constantInfo);
         }
 
-        public void RegisterConstant(string constantName, double value)
-        {
-            RegisterConstant(constantName, value, true);
-        }
 
         public void RegisterConstant(string constantName, double value, bool isOverWritable)
         {

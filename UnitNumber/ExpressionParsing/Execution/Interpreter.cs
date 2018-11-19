@@ -135,8 +135,8 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             {
                 var un = (UnitNumber)executionResult1.Value;
                 var newUnit = core.ParseUnit(unit);
-                
-                return new ExecutionResult( new UnitNumber(newUnit.FromSI(un.GetValueSi()), newUnit));
+                un.SetUnit(newUnit);
+                return new ExecutionResult( un);
             }
             throw new Exception("Bad type");
         }
