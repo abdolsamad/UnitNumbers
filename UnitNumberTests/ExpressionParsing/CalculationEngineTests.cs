@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnitConversionNS.ExpressionParsing.Execution;
 
 namespace UnitConversionNS.ExpressionParsing.Tests
 {
@@ -40,17 +41,22 @@ namespace UnitConversionNS.ExpressionParsing.Tests
         public void CalculateTest()
         {
             UnitsCore uc = new UnitsCore();
-            var inch = new Unit("in",Dimensions.Length, 0.0254);
-            var foot = new Unit("ft", 12*inch);
+            var inch = new Unit("in", Dimensions.Length, 0.0254);
+            var foot = new Unit("ft", 12 * inch);
             var sec = new Unit("s", Dimensions.Time, 1.0);
             var min = new Unit("min", Dimensions.Time, 60);
-            var cfm = new Unit( "CFM",foot.Pow(3) / min);
+            var cfm = new Unit("CFM", foot.Pow(3) / min);
             uc.RegisterUnit(cfm);
             uc.RegisterUnit(inch);
             uc.RegisterUnit(foot);
             uc.RegisterUnit(sec);
-            var ce=new CalculationEngine(uc);
+            var ce = new CalculationEngine(uc);
             var res = ce.Calculate("((40[cfm]/4)/3[in^2])[ft/s]");
+            var vars = new Dictionary<string, ExecutionResult>();
+            vars.Add("A", new ExecutionResult(1));
+            vars.Add("B", new ExecutionResult(new UnitNumber(1, foot)));
+            res = ce.Calculate("2*A+B+A^1+1+5",vars);
+            res = ce.Calculate("sin(3.141592653)",vars);
         }
 
         [TestMethod()]

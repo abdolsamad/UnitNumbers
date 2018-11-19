@@ -329,28 +329,34 @@ namespace UnitConversionNS.ExpressionParsing
         }
         private void RegisterDefaultFunctions()
         {
-            FunctionRegistry.RegisterFunction("sin", (Func<double, double>)((a) => Math.Sin(a)), false);
-            FunctionRegistry.RegisterFunction("cos", (Func<double, double>)((a) => Math.Cos(a)), false);
-            FunctionRegistry.RegisterFunction("csc", (Func<double, double>)((a) => MathUtil.Csc(a)), false);
-            FunctionRegistry.RegisterFunction("sec", (Func<double, double>)((a) => MathUtil.Sec(a)), false);
-            FunctionRegistry.RegisterFunction("asin", (Func<double, double>)((a) => Math.Asin(a)), false);
-            FunctionRegistry.RegisterFunction("acos", (Func<double, double>)((a) => Math.Acos(a)), false);
-            FunctionRegistry.RegisterFunction("tan", (Func<double, double>)((a) => Math.Tan(a)), false);
-            FunctionRegistry.RegisterFunction("cot", (Func<double, double>)((a) => MathUtil.Cot(a)), false);
-            FunctionRegistry.RegisterFunction("atan", (Func<double, double>)((a) => Math.Atan(a)), false);
-            FunctionRegistry.RegisterFunction("acot", (Func<double, double>)((a) => MathUtil.Acot(a)), false);
-            FunctionRegistry.RegisterFunction("exp", (Func<double, double>)((a) => Math.Exp(a)), false);
-            FunctionRegistry.RegisterFunction("log", (Func<double, double>)((a) => Math.Log(a)), false);
-            FunctionRegistry.RegisterFunction("loge", (Func<double, double>)((a) => Math.Log(a)), false);
-            FunctionRegistry.RegisterFunction("log10", (Func<double, double>)((a) => Math.Log10(a)), false);
-            FunctionRegistry.RegisterFunction("logn", (Func<double, double, double>)((a, b) => Math.Log(a, b)), false);
-            FunctionRegistry.RegisterFunction("sqrt", (Func<double, double>)((a) => Math.Sqrt(a)), false);
-            FunctionRegistry.RegisterFunction("abs", (Func<double, double>)((a) => Math.Abs(a)), false);
-            FunctionRegistry.RegisterFunction("max", (Func<double, double, double>)((a, b) => Math.Max(a, b)), false);
-            FunctionRegistry.RegisterFunction("min", (Func<double, double, double>)((a, b) => Math.Min(a, b)), false);
-            FunctionRegistry.RegisterFunction("ceiling", (Func<double, double>)((a) => Math.Ceiling(a)), false);
-            FunctionRegistry.RegisterFunction("floor", (Func<double, double>)((a) => Math.Floor(a)), false);
-            FunctionRegistry.RegisterFunction("truncate", (Func<double, double>)((a) => Math.Truncate(a)), false);
+            FunctionRegistry.RegisterFunction("sin", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType==DataType.Number?new ExecutionResult(Math.Sin((double)a.Value)): new ExecutionResult(Extensions.Math.Sin((UnitNumber)a.Value))), false);
+            FunctionRegistry.RegisterFunction("cos", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Cos((double)a.Value)) : new ExecutionResult(Extensions.Math.Cos((UnitNumber)a.Value))), false);
+            FunctionRegistry.RegisterFunction("csc", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(MathUtil.Csc((double)a.Value)) : new ExecutionResult(MathUtil.Csc(((UnitNumber)a.Value).Number))), false);
+            FunctionRegistry.RegisterFunction("sec", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(MathUtil.Sec((double)a.Value)) : new ExecutionResult(MathUtil.Sec(((UnitNumber)a.Value).Number))), false);
+            FunctionRegistry.RegisterFunction("asin", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Asin((double)a.Value)) : new ExecutionResult(Extensions.Math.Asin((UnitNumber)a.Value))), false);
+            FunctionRegistry.RegisterFunction("acos", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Acos((double)a.Value)) : new ExecutionResult(Extensions.Math.Acos((UnitNumber)a.Value))), false);
+            FunctionRegistry.RegisterFunction("tan", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Tan((double)a.Value)) : new ExecutionResult(Extensions.Math.Tan((UnitNumber)a.Value))), false);
+            FunctionRegistry.RegisterFunction("cot", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(MathUtil.Cot((double)a.Value)) : new ExecutionResult(MathUtil.Cot(((UnitNumber)a.Value).Number))), false);
+            FunctionRegistry.RegisterFunction("atan", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Atan((double)a.Value)) : new ExecutionResult(Extensions.Math.Atan((UnitNumber)a.Value))), false);
+            FunctionRegistry.RegisterFunction("acot", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(MathUtil.Acot((double)a.Value)) : new ExecutionResult(MathUtil.Acot(((UnitNumber)a.Value).Number))), false);
+            FunctionRegistry.RegisterFunction("exp", (Func<ExecutionResult, ExecutionResult>)((a) =>
+            {
+                if (a.DataType == DataType.Number)
+                    return new ExecutionResult(Math.Exp((double) a.Value));
+                else
+                    throw new Exception("Can't raise to a power with unit.");
+            }), false);
+            FunctionRegistry.RegisterFunction("log", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Log((double)a.Value)) : new ExecutionResult(Math.Log(((UnitNumber)a.Value).Number))), false);
+            FunctionRegistry.RegisterFunction("loge", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Log((double)a.Value)) : new ExecutionResult(Math.Log(((UnitNumber)a.Value).Number))), false);
+            FunctionRegistry.RegisterFunction("log10", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Log10((double)a.Value)) : new ExecutionResult(Math.Log10(((UnitNumber)a.Value).Number))), false);
+            FunctionRegistry.RegisterFunction("sqrt", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Sqrt((double)a.Value)) : new ExecutionResult(Extensions.Math.Pow((UnitNumber)a.Value,0.5))), false);
+            FunctionRegistry.RegisterFunction("abs", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Abs((double)a.Value)) : new ExecutionResult(Extensions.Math.Abs((UnitNumber)a.Value))), false);
+            //FunctionRegistry.RegisterFunction("logn", (Func<ExecutionResult, ExecutionResult, ExecutionResult>)((a, b) => Math.Log(a, b)), false);
+            //FunctionRegistry.RegisterFunction("max", (Func<ExecutionResult, ExecutionResult, ExecutionResult>)((a, b) => Math.Max(a, b)), false);
+            //FunctionRegistry.RegisterFunction("min", (Func<ExecutionResult, ExecutionResult, ExecutionResult>)((a, b) => Math.Min(a, b)), false);
+            FunctionRegistry.RegisterFunction("ceil", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Ceiling((double)a.Value)) : new ExecutionResult(Extensions.Math.Ceiling((UnitNumber)a.Value))), false);
+            FunctionRegistry.RegisterFunction("floor", (Func<ExecutionResult, ExecutionResult>)((a) => a.DataType == DataType.Number ? new ExecutionResult(Math.Floor((double)a.Value)) : new ExecutionResult(Extensions.Math.Floor((UnitNumber)a.Value))), false);
+            //FunctionRegistry.RegisterFunction("truncate", (Func<ExecutionResult, ExecutionResult>)((a) => Math.Truncate(a)), false);
         }
 
         private void RegisterDefaultConstants()

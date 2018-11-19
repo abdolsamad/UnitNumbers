@@ -57,8 +57,8 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             if (funcType.FullName.StartsWith("System.Func"))
             {
                 foreach (var genericArgument in funcType.GetMethod("Invoke").GetParameters())
-                    if (genericArgument.ParameterType != typeof(double))
-                        throw new ArgumentException("Only doubles are supported as function arguments.", "function");
+                    if (genericArgument.ParameterType != typeof(ExecutionResult))
+                        throw new ArgumentException($"Only {nameof(ExecutionResult)}s are supported as function arguments.", "function");
 
                 numberOfParameters = funcType.GetMethod("Invoke").GetParameters().Length;
             }
