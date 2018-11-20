@@ -271,6 +271,7 @@ namespace UnitConversionNS.ExpressionParsing.Tokenizer
 
                 return !(previousToken.TokenType == TokenType.Number ||
                          previousToken.TokenType == TokenType.Text ||
+                         previousToken.TokenType == TokenType.Unit ||
                          previousToken.TokenType == TokenType.RightBracket);
             }
             else

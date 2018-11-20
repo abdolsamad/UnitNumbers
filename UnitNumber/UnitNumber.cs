@@ -203,6 +203,16 @@ namespace UnitConversionNS
         {
             return number <= un2.Number;
         }
+        public static bool operator ==(UnitNumber un1, UnitNumber un2)
+        {
+            ConfirmUnitMatch(un1.Unit, un2.Unit);
+            return Utils.DEqual(un1.GetValueSi(), un2.GetValueSi());
+        }
+
+        public static bool operator !=(UnitNumber un1, UnitNumber un2)
+        {
+            return !(un1 == un2);
+        }
 
         #endregion
 

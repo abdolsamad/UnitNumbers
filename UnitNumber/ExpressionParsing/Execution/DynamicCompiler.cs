@@ -21,19 +21,19 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                     .Assembly.FullName;
         }
 
-        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry, UnitsCore core)
+        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry)
         {
-            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>(), core);
+            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>());
         }
 
         public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry,
-            IDictionary<string, ExecutionResult> variables, UnitsCore core)
+            IDictionary<string, ExecutionResult> variables)
         {
-            return BuildFormula(operation, functionRegistry, core)(variables);
+            return BuildFormula(operation, functionRegistry)(variables);
         }
 
         public Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(Operation operation,
-            IFunctionRegistry functionRegistry, UnitsCore core)
+            IFunctionRegistry functionRegistry)
         {
             Func<FormulaContext, ExecutionResult> func = BuildFormulaInternal(operation, functionRegistry);
             return variables =>
@@ -207,6 +207,12 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                         Expression.Convert(Expression.Property(functionInfoVariable, "Function"), funcType),
                         funcType.GetMethod("Invoke", parameterTypes),
                         arguments));
+            }
+            else if (operation.GetType() == typeof(ChangeUnit))
+            {
+                ChangeUnit oper = (ChangeUnit)operation;
+                Expression argument = GenerateMethodBody(oper.Argument1, contextParameter, functionRegistry);
+                return Expression.Call(argument, typeof(ExecutionResult).GetMethod("ChangeUnit", new Type[] { typeof(Unit) }), Expression.Constant(oper.Unit,typeof(Unit)));
             }
             else
             {

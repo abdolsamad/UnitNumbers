@@ -25,13 +25,13 @@ namespace UnitConversionNS.ExpressionParsing
         private readonly MemoryCache<string, Func<IDictionary<string, ExecutionResult>, ExecutionResult>> executionFormulaCache;
         private readonly bool cacheEnabled;
         private readonly bool optimizerEnabled;
-        private UnitsCore core;
+        private UnitsCore unitsCore;
         /// <summary>
         /// Creates a new instance of the <see cref="CalculationEngine"/> class with
         /// default parameters.
         /// </summary>
-        public CalculationEngine(UnitsCore core)
-            : this(core,CultureInfo.CurrentCulture, ExecutionMode.Compiled)
+        public CalculationEngine(UnitsCore unitsCore)
+            : this(unitsCore,CultureInfo.CurrentCulture, ExecutionMode.Compiled)
         {
         }
 
@@ -42,8 +42,8 @@ namespace UnitConversionNS.ExpressionParsing
         /// <param name="cultureInfo">
         /// The <see cref="CultureInfo"/> required for correctly reading floating poin numbers.
         /// </param>
-        public CalculationEngine(UnitsCore core, CultureInfo cultureInfo)
-            : this(core,cultureInfo, ExecutionMode.Compiled)
+        public CalculationEngine(UnitsCore unitsCore, CultureInfo cultureInfo)
+            : this(unitsCore,cultureInfo, ExecutionMode.Compiled)
         {
         }
 
@@ -55,8 +55,8 @@ namespace UnitConversionNS.ExpressionParsing
         /// The <see cref="CultureInfo"/> required for correctly reading floating poin numbers.
         /// </param>
         /// <param name="executionMode">The execution mode that must be used for formula execution.</param>
-        public CalculationEngine(UnitsCore core, CultureInfo cultureInfo, ExecutionMode executionMode)
-            : this(core,cultureInfo, executionMode, true, true)
+        public CalculationEngine(UnitsCore unitsCore, CultureInfo cultureInfo, ExecutionMode executionMode)
+            : this(unitsCore,cultureInfo, executionMode, true, true)
         {
         }
 
@@ -69,8 +69,8 @@ namespace UnitConversionNS.ExpressionParsing
         /// <param name="executionMode">The execution mode that must be used for formula execution.</param>
         /// <param name="cacheEnabled">Enable or disable caching of mathematical formulas.</param>
         /// <param name="optimizerEnabled">Enable or disable optimizing of formulas.</param>
-        public CalculationEngine(UnitsCore core, CultureInfo cultureInfo, ExecutionMode executionMode, bool cacheEnabled, bool optimizerEnabled)
-            : this(core,cultureInfo, executionMode, cacheEnabled, optimizerEnabled, true, true)
+        public CalculationEngine(UnitsCore unitsCore, CultureInfo cultureInfo, ExecutionMode executionMode, bool cacheEnabled, bool optimizerEnabled)
+            : this(unitsCore,cultureInfo, executionMode, cacheEnabled, optimizerEnabled, true, true)
         {
         }
 
@@ -85,7 +85,7 @@ namespace UnitConversionNS.ExpressionParsing
         /// <param name="optimizerEnabled">Enable or disable optimizing of formulas.</param>
         /// <param name="defaultFunctions">Enable or disable the default functions.</param>
         /// <param name="defaultConstants">Enable or disable the default constants.</param>
-        public CalculationEngine(UnitsCore core,CultureInfo cultureInfo, ExecutionMode executionMode, bool cacheEnabled,
+        public CalculationEngine(UnitsCore unitsCore,CultureInfo cultureInfo, ExecutionMode executionMode, bool cacheEnabled,
             bool optimizerEnabled, bool defaultFunctions, bool defaultConstants)
         {
             this.executionFormulaCache = new MemoryCache<string, Func<IDictionary<string, ExecutionResult>, ExecutionResult>>();
@@ -94,7 +94,7 @@ namespace UnitConversionNS.ExpressionParsing
             this.cultureInfo = cultureInfo;
             this.cacheEnabled = cacheEnabled;
             this.optimizerEnabled = optimizerEnabled;
-            this.core = core;
+            this.unitsCore = unitsCore;
             if (executionMode == ExecutionMode.Interpreted)
                 executor = new Interpreter();
             else if (executionMode == ExecutionMode.Compiled)
@@ -378,17 +378,17 @@ namespace UnitConversionNS.ExpressionParsing
             List<Token> tokens = tokenReader.Read(formulaText);
 
             AstBuilder astBuilder = new AstBuilder(FunctionRegistry);
-            Operation operation = astBuilder.Build(tokens);
+            Operation operation = astBuilder.Build(tokens,unitsCore);
 
             if (optimizerEnabled)
-                return optimizer.Optimize(operation, this.FunctionRegistry, this.core);
+                return optimizer.Optimize(operation, this.FunctionRegistry);
             else
                 return operation;
         }
 
         private Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(string formulaText, Operation operation)
         {
-            return executionFormulaCache.GetOrAdd(formulaText, v => executor.BuildFormula(operation, this.FunctionRegistry,core));
+            return executionFormulaCache.GetOrAdd(formulaText, v => executor.BuildFormula(operation, this.FunctionRegistry));
         }
 
         private bool IsInFormulaCache(string formulaText, out Func<IDictionary<string, ExecutionResult>, ExecutionResult> function)

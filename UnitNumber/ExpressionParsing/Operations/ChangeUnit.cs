@@ -2,7 +2,7 @@
 {
     public class ChangeUnit : Operation
     {
-        public ChangeUnit(Operation argument1,string unit)
+        public ChangeUnit(Operation argument1,Unit unit)
             : base(DataType.UnitNumber, argument1.DependsOnVariables)
         {
             this.Argument1 = argument1;
@@ -10,6 +10,6 @@
         }
 
         public Operation Argument1 { get; internal set; }
-        public string Unit { get; internal set; }
+        public Unit Unit { get; internal set; }
     }
 }

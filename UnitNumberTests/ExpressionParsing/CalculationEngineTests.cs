@@ -50,15 +50,69 @@ namespace UnitConversionNS.ExpressionParsing.Tests
             uc.RegisterUnit(inch);
             uc.RegisterUnit(foot);
             uc.RegisterUnit(sec);
+            var oneFoot = new UnitNumber(1, foot);
             var ce = new CalculationEngine(uc);
-            var res = ce.Calculate("((40[cfm]/4)/3[in^2])[ft/s]");
             var vars = new Dictionary<string, ExecutionResult>();
             vars.Add("A", new ExecutionResult(1));
-            vars.Add("B", new ExecutionResult(new UnitNumber(1, foot)));
-            res = ce.Calculate("A",vars);
-            res = ce.Calculate("pi",vars);
-            res = ce.Calculate("sin(3.141592653)",vars);
-            res = ce.Calculate("sin(pi)",vars);
+            vars.Add("B", new ExecutionResult(oneFoot));
+            ExecutionResult result;
+            //A number
+            result = ce.Calculate("1.515");
+            Assert.AreEqual(result.DataType,DataType.Number);
+            Assert.AreEqual((double)result.Value,1.515,1e-8);
+            //A number with unit
+            result = ce.Calculate("1.0[ft]");
+            Assert.AreEqual(result.DataType, DataType.UnitNumber);
+            Assert.IsTrue((UnitNumber)result.Value==oneFoot);
+            result = ce.Calculate("-1.0[ft]");
+            Assert.AreEqual(result.DataType, DataType.UnitNumber);
+            Assert.IsTrue((UnitNumber)result.Value == -oneFoot);
+            //Unitless calculations
+            result = ce.Calculate("1+0.515");
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, 1.515, 1e-8);
+            //Calculations with unit
+            result = ce.Calculate("0.5[ft]+6[in]");
+            Assert.AreEqual(result.DataType, DataType.UnitNumber);
+            Assert.IsTrue((UnitNumber)result.Value == oneFoot);
+            //Constant
+            result = ce.Calculate("pi");
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, Math.PI, 1e-8);
+            result = ce.Calculate("-pi");
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, -Math.PI, 1e-8);
+            result = ce.Calculate("1-pi");
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, 1-Math.PI, 1e-8);
+            //Variable
+            result = ce.Calculate("B",vars);
+            Assert.AreEqual(result.DataType, DataType.UnitNumber);
+            Assert.IsTrue((UnitNumber)result.Value==oneFoot);
+            result = ce.Calculate("-B", vars);
+            Assert.AreEqual(result.DataType, DataType.UnitNumber);
+            Assert.IsTrue((UnitNumber)result.Value == -oneFoot);
+            result = ce.Calculate("1[ft]-B", vars);
+            Assert.AreEqual(result.DataType, DataType.UnitNumber);
+            Assert.IsTrue((UnitNumber)result.Value == oneFoot-oneFoot);
+            //Function with number
+            result = ce.Calculate("sin(3.1415926535897932384626433832795)", vars);
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, Math.Sin(Math.PI), 1e-8);
+            result = ce.Calculate("sin(3.1415926535897932384626433832795/3)", vars);
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, Math.Sin(Math.PI/3), 1e-8);
+            //Function with constant
+            result = ce.Calculate("sin(pi)", vars);
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, Math.Sin(Math.PI), 1e-8);
+            result = ce.Calculate("sin(pi/3)", vars);
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, Math.Sin(Math.PI / 3), 1e-8);
+            //Function with variable
+            result = ce.Calculate("sin(A)", vars);
+            Assert.AreEqual(result.DataType, DataType.Number);
+            Assert.AreEqual((double)result.Value, Math.Sin(1.0), 1e-8);
         }
 
         [TestMethod()]

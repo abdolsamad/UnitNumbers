@@ -11,22 +11,22 @@ namespace UnitConversionNS.ExpressionParsing.Execution
     internal class Interpreter : IExecutor
     {
         public Func<IDictionary<string, ExecutionResult>, ExecutionResult> BuildFormula(Operation operation, 
-            IFunctionRegistry functionRegistry,UnitsCore core)
+            IFunctionRegistry functionRegistry)
         { 
             return variables =>
                 {
                     variables = EngineUtil.ConvertVariableNamesToLowerCase(variables);
-                    return Execute(operation, functionRegistry, variables, core);
+                    return Execute(operation, functionRegistry, variables);
                 };
         }
 
-        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry,UnitsCore core)
+        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry)
         {
-            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>(),core);
+            return Execute(operation, functionRegistry, new Dictionary<string, ExecutionResult>());
         }
 
-        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry, 
-            IDictionary<string, ExecutionResult> variables,UnitsCore core)
+        public ExecutionResult Execute(Operation operation, IFunctionRegistry functionRegistry,
+            IDictionary<string, ExecutionResult> variables)
         {
             if (operation == null)
                 throw new ArgumentNullException("operation");
@@ -56,49 +56,49 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             else if (operation.GetType() == typeof(Multiplication))
             {
                 Multiplication multiplication = (Multiplication)operation;
-                var executionResult1 = Execute(multiplication.Argument1, functionRegistry, variables,core);
-                var executionResult2 = Execute(multiplication.Argument2, functionRegistry, variables,core);
+                var executionResult1 = Execute(multiplication.Argument1, functionRegistry, variables);
+                var executionResult2 = Execute(multiplication.Argument2, functionRegistry, variables);
                 return ExecuteMultiplication(executionResult1, executionResult2);
                 
             }
             else if (operation.GetType() == typeof(Addition))
             {
                 Addition addition = (Addition)operation;
-                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables,core);
-                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables,core);
+                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables);
+                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables);
                 return ExecuteAddition(executionResult1, executionResult2); ;
             }
             else if (operation.GetType() == typeof(Subtraction))
             {
                 Subtraction addition = (Subtraction)operation;
-                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables,core);
-                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables,core);
+                var executionResult1 = Execute(addition.Argument1, functionRegistry, variables);
+                var executionResult2 = Execute(addition.Argument2, functionRegistry, variables);
                 return ExecuteSubtraction(executionResult1, executionResult2);
             }
             else if (operation.GetType() == typeof(Division))
             {
                 Division division = (Division)operation;
-                var executionResult1 = Execute(division.Dividend, functionRegistry, variables,core);
-                var executionResult2 = Execute(division.Divisor, functionRegistry, variables, core);
+                var executionResult1 = Execute(division.Dividend, functionRegistry, variables);
+                var executionResult2 = Execute(division.Divisor, functionRegistry, variables);
                 return ExecuteDivision(executionResult1, executionResult2);
             }
             else if (operation.GetType() == typeof(Exponentiation))
             {
                 Exponentiation exponentiation = (Exponentiation)operation;
-                var executionResult1 = Execute(exponentiation.Base, functionRegistry, variables, core);
-                var executionResult2 = Execute(exponentiation.Exponent, functionRegistry, variables, core);
+                var executionResult1 = Execute(exponentiation.Base, functionRegistry, variables);
+                var executionResult2 = Execute(exponentiation.Exponent, functionRegistry, variables);
                 return ExecuteExponentiation(executionResult1, executionResult2);
             }
             else if (operation.GetType() == typeof(ChangeUnit))
             {
                 ChangeUnit exponentiation = (ChangeUnit)operation;
-                var executionResult1 = Execute(exponentiation.Argument1, functionRegistry, variables, core);
-                return ExecuteUnitChange(executionResult1, exponentiation.Unit,core);
+                var executionResult1 = Execute(exponentiation.Argument1, functionRegistry, variables);
+                return ExecuteUnitChange(executionResult1, exponentiation.Unit);
             }
             else if (operation.GetType() == typeof(UnaryMinus))
             {
                 UnaryMinus unaryMinus = (UnaryMinus)operation;
-                var executionResult = Execute(unaryMinus.Argument, functionRegistry, variables, core);
+                var executionResult = Execute(unaryMinus.Argument, functionRegistry, variables);
                 if(executionResult.DataType == DataType.Number)
                     return new ExecutionResult( -(double)executionResult.Value);
                 else
@@ -114,7 +114,7 @@ namespace UnitConversionNS.ExpressionParsing.Execution
 
                 ExecutionResult[] arguments = new ExecutionResult[functionInfo.IsDynamicFunc ? function.Arguments.Count : functionInfo.NumberOfParameters];
                 for (int i = 0; i < arguments.Length; i++)
-                    arguments[i] = Execute(function.Arguments[i], functionRegistry, variables, core);
+                    arguments[i] = Execute(function.Arguments[i], functionRegistry, variables);
 
                 return Invoke(functionInfo.Function, arguments);
             }
@@ -124,19 +124,18 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             }
         }
 
-        private ExecutionResult ExecuteUnitChange(ExecutionResult executionResult1, string unit,UnitsCore core)
+        private ExecutionResult ExecuteUnitChange(ExecutionResult executionResult1, Unit unit)
         {
             if (executionResult1.DataType == DataType.Number)
             {
-                var un = new UnitNumber((double)executionResult1.Value,core.ParseUnit(unit));
+                var un = new UnitNumber((double)executionResult1.Value,unit);
                 return new ExecutionResult( un);
             }
             else if (executionResult1.DataType == DataType.UnitNumber)
             {
                 var un = (UnitNumber)executionResult1.Value;
-                var newUnit = core.ParseUnit(unit);
-                un.SetUnit(newUnit);
-                return new ExecutionResult( un);
+                un.SetUnit(unit);
+                return new ExecutionResult(un);
             }
             throw new Exception("Bad type");
         }

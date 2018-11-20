@@ -34,7 +34,7 @@ namespace UnitConversionNS.ExpressionParsing
             operationPrecedence.Add('^', 4);
         }
 
-        public Operation Build(IList<Token> tokens)
+        public Operation Build(IList<Token> tokens,UnitsCore unitsCore)
         {
             resultStack.Clear();
             operatorStack.Clear();
@@ -62,7 +62,7 @@ namespace UnitConversionNS.ExpressionParsing
                         }
                         break;
                     case TokenType.Unit:
-                        resultStack.Push(new ChangeUnit(resultStack.Pop(),(string)token.Value));
+                        resultStack.Push(new ChangeUnit(resultStack.Pop(),unitsCore.ParseUnit((string)token.Value)));
                         //perform unit conversion
                         break;
                     case TokenType.LeftBracket:

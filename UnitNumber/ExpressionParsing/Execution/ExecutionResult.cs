@@ -36,6 +36,19 @@ namespace UnitConversionNS.ExpressionParsing.Execution
             }
         }
 
+        public ExecutionResult ChangeUnit(Unit unit)
+        {
+            if (DataType == DataType.Number)
+                return new ExecutionResult(new UnitNumber((double) Value, unit));
+            else if (DataType == DataType.UnitNumber)
+            {
+                var unitNumber = (UnitNumber) Value;
+                return new ExecutionResult(new UnitNumber(unitNumber.GetValue(unit), unit));
+            }
+
+            throw new Exception("Error in unit conversion.");
+        }
+
         public static ExecutionResult operator *(ExecutionResult r1, ExecutionResult r2)
         {
             object value = null;
@@ -188,6 +201,24 @@ namespace UnitConversionNS.ExpressionParsing.Execution
                             throw new Exception("Bad execution result type.");
                     }
 
+                    break;
+                default:
+                    throw new Exception("Bad execution result type.");
+            }
+
+            return new ExecutionResult(value);
+        }
+
+        public static ExecutionResult operator -(ExecutionResult r1)
+        {
+            object value = null;
+            switch (r1.DataType)
+            {
+                case DataType.Number:
+                    return new ExecutionResult(-(double) r1.Value);
+                    break;
+                case DataType.UnitNumber:
+                    return new ExecutionResult(-(UnitNumber) r1.Value);
                     break;
                 default:
                     throw new Exception("Bad execution result type.");
