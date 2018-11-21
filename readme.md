@@ -86,7 +86,7 @@ Unit cm3 = cm.Pow(3);
 ```
 You can convert from and to SI units(of the same dimension) using unit itself:
 ```csharp
-double l1 = ft.FromSI(1.2);//1.2ft to meter
+double l1 = ft.FromSI(1.2);//1.2 meter to feet
 double a1 = cm2.ToSI(5.6);//5.6cm^2 to meter^2
 ```
 if you have a unit number you can get its value in any other unit as long as they have the same dimensions:
