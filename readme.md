@@ -97,3 +97,22 @@ double d1 = n1.GetValue(cm);//getting n1 in cm unit
 double d1 = n1.GetValue(cm2);//Error: An error is thrown! because dimensions wont match.
 ```
 
+### Evaluating expressions:
+This library can be used to evaluate mathematical expressions involving units. For this, we need to create a `CalculationEngine` instance first:
+```csharp
+using UnitConversionNS;
+using UnitConversionNS.ExpressionParsing;
+UnitsCore core = new UnitsCore();//to hold information about units and the way they can be converted to each other
+//adding some units to core
+core.RegisterUnit(new Unit("m", Dimensions.Length, 1.0));
+core.RegisterUnit(new Unit("cm", Dimensions.Length, 0.01));
+CalculationEngine engine = new CalculationEngine(core);
+```
+then we can pass the mathematical expression(in form of a string) to the `Calculate` method in the `engine`:
+```csharp
+using UnitConversionNS.ExpressionParsing.Execution;//ExecutionResult is defined here
+ExecutionResult result = engine.Calculate("(1[m]+3[cm])/2");
+//result.DataType -> DataType.UnitNumber
+//(UnitNumber)reslut.Value -> 0.515[m]
+```
+Result is reported in the whaterever unit whith apears first(`[m]` in this case). You can change that by calling `ExecutionResult ChangeUnit(Unit unit)`. This will give you another `ExecutionResult` with the requested unit.
